@@ -35,7 +35,9 @@ const schema = new mongoose.Schema({
     type: String,
   },
   comments: [schemaComment],
-  menu:schemaFood
+  menu:schemaFood,
+  adminUsername:{type:String, required: true},
+  adminPassword:{type:String, required: true},
 });
 
 const model = mongoose.model("resturants", schema);

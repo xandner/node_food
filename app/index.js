@@ -6,6 +6,8 @@ const winston = require("winston");
 require("winston-mongodb");
 require("express-async-errors");
 
+const api=require("./routes/api")
+
 const ErrorMiddleware = require("./http/middleware/Error");
 
 const app = express();
@@ -25,6 +27,10 @@ class Application {
     if (app.get("env") === "production") app.use(morgan(tiny));
     app.use(corse());
     app.use(ErrorMiddleware);
+
+    //* Routes
+    app.use("/api",api)
+
   }
   setupConfig() {
     winston.add(new winston.transports.File({ filename: "error-log.log" }));
