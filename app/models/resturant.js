@@ -1,4 +1,6 @@
 const mongoose = require("mongoose");
+const config= require("config");
+const jwt = require("jsonwebtoken");
 
 const schemaComment = mongoose.Schema({
   user: { type: String, required: true },
@@ -39,6 +41,15 @@ const schema = new mongoose.Schema({
   adminUsername:{type:String, required: true},
   adminPassword:{type:String, required: true},
 });
+
+schema.methods.generateAuthToken = function(){
+  const data = {
+    _id:this._id,
+    adminUsername:this.adminUsername,
+    role:"resturantsAdmin"
+  };
+  return jwt.sign(data,config.get('jwtPrivatekye'))
+}
 
 const model = mongoose.model("resturants", schema);
 module.exports = model;

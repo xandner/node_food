@@ -5,6 +5,7 @@ const resturantMode = require("../../models/resturant");
 const {
   validatorCreateResturant,
 } = require("../validator/createResturantValidator");
+const { validatorLoginResturant } = require("../validator/loginValidator");
 
 class ResturantController {
   async getList(req, res) {
@@ -64,6 +65,17 @@ class ResturantController {
     if (!id) return res.status(400).send("you should enter id");
     const data=await resturantMode.findByIdAndRemove(id);
     res.send("ok")
+  }
+
+  async login(req, res) {
+    const {error} =validatorLoginResturant(req.body)
+    if (error) return res.status(400).send(error.message)
+    const user = await resturantMode.findOne({adminUsername:req.body.adminUsername})
+    if(!user) return res.status(404).send("user not found")
+    const result= await bcrypt.compare(req.body.adminPassword,user.adminPassword)
+    if (!result) return res.status(404).send("password is wrong")
+    const token= await user.generateAuthToken()
+    res.header('x-auth-token',token).status(200).send(token)
   }
 }
 
