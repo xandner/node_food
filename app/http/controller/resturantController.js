@@ -6,6 +6,7 @@ const {
   validatorCreateResturant,
 } = require("../validator/createResturantValidator");
 const { validatorLoginResturant } = require("../validator/loginValidator");
+const { foodValidator } = require("../validator/createFoodVaidator");
 
 class ResturantController {
   async getList(req, res) {
@@ -44,38 +45,60 @@ class ResturantController {
     if (!id) return res.status(400).send("you should enter id");
     const { error } = validatorCreateResturant(req.body);
     if (error) res.status(400).send(error);
-    const data = await resturantMode.findByIdAndUpdate(id, {
-      $set: _.pick(req.body, [
-        "name",
-        "description",
-        "addresse",
-        "adminUsername",
-        "adminPassword",
-      ]),
-    },{new:true});
+    const data = await resturantMode.findByIdAndUpdate(
+      id,
+      {
+        $set: _.pick(req.body, [
+          "name",
+          "description",
+          "addresse",
+          "adminUsername",
+          "adminPassword",
+        ]),
+      },
+      { new: true }
+    );
     if (!data) return res.status(404).send("resturant not found");
     res
       .status(200)
-      .send(
-        _.pick(data, ["name", "description", "addresse", "adminUsername"])
-      );
+      .send(_.pick(data, ["name", "description", "addresse", "adminUsername"]));
   }
   async delete(req, res) {
     const id = req.params.id;
     if (!id) return res.status(400).send("you should enter id");
-    const data=await resturantMode.findByIdAndRemove(id);
-    res.send("ok")
+    const data = await resturantMode.findByIdAndRemove(id);
+    res.send("ok");
   }
 
   async login(req, res) {
-    const {error} =validatorLoginResturant(req.body)
-    if (error) return res.status(400).send(error.message)
-    const user = await resturantMode.findOne({adminUsername:req.body.adminUsername})
-    if(!user) return res.status(404).send("user not found")
-    const result= await bcrypt.compare(req.body.adminPassword,user.adminPassword)
-    if (!result) return res.status(404).send("password is wrong")
-    const token= await user.generateAuthToken()
-    res.header('x-auth-token',token).status(200).send(token)
+    const { error } = validatorLoginResturant(req.body);
+    if (error) return res.status(400).send(error.message);
+    const user = await resturantMode.findOne({
+      adminUsername: req.body.adminUsername,
+    });
+    if (!user) return res.status(404).send("user not found");
+    const result = await bcrypt.compare(
+      req.body.adminPassword,
+      user.adminPassword
+    );
+    if (!result) return res.status(404).send("password is wrong");
+    const token = await user.generateAuthToken();
+    res.header("x-auth-token", token).status(200).send(token);
+  }
+
+  async add_food(req, res) {
+    const resturant = await resturantMode.findOne({
+      adminUsername: req.user.adminUsername,
+    });
+    if (!resturant) return res.status(404).send("resturant not found");
+    const { error } = foodValidator(req.body);
+    if (error) return res.status(400).send(error.message);
+    resturant.menu.push(_.pick(req.body, ["name", "description", "price"]));
+    const menu = await resturant.save();
+    res.status(200).send(menu);
+  }
+  async get_food(req, res) {
+    //
   }
 }
 
