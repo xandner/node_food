@@ -98,7 +98,42 @@ class ResturantController {
     res.status(200).send(menu);
   }
   async get_food(req, res) {
-    //
+    const menu = await resturantMode.findOne({
+      adminUsername: req.user.adminUsername,
+    });
+    if (!menu) return res.status(404).send("resturant not found");
+    return res
+      .status(200)
+      .send(_.pick(menu, ["name", "description", "address", "menu"]));
+  }
+  async delete_food(req, res) {
+    const resturant = await resturantMode.findOne({
+      adminUsername: req.user.adminUsername,
+    });
+    if (!resturant) return res.status(404).send("resturant or food not found ");
+    const food_id = req.params.id;
+    if (!food_id) return res.status(404).send("send food Id ");
+    const foundFood = resturant.menu.id(food_id);
+    if (foundFood) foundFood.remove();
+    await resturant.save();
+    res.send("deleted");
+  }
+
+  async update_food(req, res) {
+    const resturant = await resturantMode.findOne({
+      adminUsername: req.user.adminUsername,
+    });
+    if (!resturant) return res.status(404).send("resturant or food not found ");
+    const food_id = req.params.id;
+    if (!food_id) return res.status(404).send("send food Id ");
+    const foundFood = resturant.menu.id(food_id);
+    if (foundFood) {
+      if (req.body.name) foundFood.name = req.body.name;
+      if (req.body.description) foundFood.description = req.body.description;
+      if (req.body.price) foundFood.price = req.body.price;
+    }
+    await resturant.save();
+    res.send(foundFood);
   }
 }
 
