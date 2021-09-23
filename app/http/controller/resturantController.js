@@ -93,7 +93,7 @@ class ResturantController {
     if (!resturant) return res.status(404).send("resturant not found");
     const { error } = foodValidator(req.body);
     if (error) return res.status(400).send(error.message);
-    resturant.menu.push(_.pick(req.body, ["name", "description", "price"]));
+    resturant.menu.push({..._.pick(req.body, ["name", "description", "price"]),picture:req.file.filename});
     const menu = await resturant.save();
     res.status(200).send(menu);
   }
@@ -134,6 +134,10 @@ class ResturantController {
     }
     await resturant.save();
     res.send(foundFood);
+  }
+  async setFoodPhoto(req, res) {
+    console.log(req.file);
+    res.send(true);
   }
 }
 
