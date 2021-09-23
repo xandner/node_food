@@ -22,7 +22,7 @@ class Application {
   setupRoutesAndMiddleware() {
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
-    app.use(express.static("public"));
+    app.use(express.static("uploads"));
 
     if (app.get("env") === "production") app.use(morgan(tiny));
     app.use(corse());
